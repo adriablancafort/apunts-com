@@ -1,0 +1,123 @@
+Exercise 1:
+1. (no flags provided, default output) => only processes bound to the terminal:
+
+  PID TTY          TIME CMD
+ 4366 pts/0    00:00:00 tcsh
+ 4665 pts/0    00:00:00 ps
+
+2. “-a” => processes bound to any terminal, except session leaders (bash): 
+
+  PID TTY          TIME CMD
+ 4666 pts/0    00:00:00 ps
+
+3. “-u” or “u” (they do the same): 
+
+USER       PID %CPU %MEM    VSZ   RSS TTY      STAT START   TIME COMMAND
+paula.e+  4366  0.0  0.0  27520  4868 pts/0    Ss   10:11   0:00 -csh
+paula.e+  4769  0.0  0.0  48268  3984 pts/0    R+   10:18   0:00 ps -u
+
+4. “-u <username>”: 
+
+  PID TTY          TIME CMD
+ 3223 ?        00:00:00 systemd
+ 3263 ?        00:00:00 (sd-pam)
+ 3287 ?        00:00:00 startplasma-x11
+ 3295 ?        00:00:00 dbus-daemon
+ ...
+ 4729 ?        00:00:00 Web Content
+ 4755 ?        00:00:00 RDD Process
+ 4773 pts/0    00:00:00 ps
+
+5. “-e”: => all processes: 
+
+ PID TTY          TIME CMD
+    1 ?        00:00:02 systemd
+    2 ?        00:00:00 kthreadd
+    3 ?        00:00:00 rcu_gp
+    4 ?        00:00:00 rcu_par_gp
+    6 ?        00:00:00 kworker/0:0H-events_highpri
+    7 ?        00:00:00 kworker/0:1-events
+    9 ?        00:00:00 mm_percpu_wq
+ ...
+ 4785 ?        00:00:00 kioslave5
+ 4791 ?        00:00:00 kioslave5
+ 4795 ?        00:00:00 kioslave5
+ 4853 ?        00:00:00 kworker/u25:2
+ 4854 pts/0    00:00:00 ps
+
+6. “-f”: => full information: 
+
+UID        PID  PPID  C STIME TTY          TIME CMD
+paula.e+  4366  4363  0 10:11 pts/0    00:00:00 -csh
+paula.e+  4857  4366  0 10:21 pts/0    00:00:00 ps -f
+
+7. “-fL” => ... including threads information (LWP): 
+
+UID        PID  PPID   LWP  C NLWP STIME TTY          TIME CMD
+paula.e+  4366  4363  4366  0    1 10:11 pts/0    00:00:00 -csh
+paula.e+  4860  4366  4860  0    1 10:21 pts/0    00:00:00 ps -fL
+
+We see the first column, common to all is PID, which stands for Process ID. This serves as the Process' identifier, which is used to allocate hardware resources to it (assign it to a thread). PPID is the ID of the process' parent process, that is the process that created the process at hand. The TIME column is the total accumulated CPU utilisation time for the process. The CMD column is the one that prompted the execution of the process. START indicates the time that the process was created. STAT indicates the status of the process (whether it is running, waiting, finished, etc). %CPU and %MEM indicate the percentage of CPU usage and Memory usage respectively.
+
+Exercise 2:
+
+We find the tree using the command pstree.
+
+We can use this to localise a process in the process tree, as well as its hierarchy. For example, the process executing has the following hierarchy: pstree -> tcsh -> lxterminal -> plasmashell -> plasmasession -> startplasma-x11 -> sdddm-helper -> sddm -> systemd, where -> indicates son of (process wise).
+
+Exercise 3:
+
+We want to match the following columns from the top command to the respective arguments in ps -o:
+PID -> pid
+%CPU -> %cpu
+%MEM -> %mem
+COMMAND -> args
+TIME+ -> times (in seconds instead of hundredths of second)
+USER -> euser
+S -> s
+PR -> pri
+NI -> nice
+
+Which leads to: ps -o pid,euser,pri,nice,s,%cpu,%mem,times,args
+
+Exercise 4:
+
+As advised, we will use the "launch" program to execute programs on a given hardware thread, with the following commands:
+./launch.sh 0 ./integers
+nice ./launch.sh 0 ./floats
+
+This launches both programs on the hardware thread 0, with different values of niceness. This allows us to see that the resource distribution changes in terms of priority:
+The integers program uses 70% of the CPU and the float uses 30% of the CPU. This makes sense as the integers program has 0 niceness, therefore more priority than the one with niceness 4, which is 4 priority levels down. This is reflected in the execution time, as the integers program took 50.75 seconds and the float program took 37.13 seconds.
+
+We now try with two instances of the same program, integers for example, and we obtain similar CPU distribution (70/30) and similar execution times: 36.75 seconds and 50.34 seconds.
+
+With integers and floats with priorities reversed, we see the expected results: the program with higher priority takes 70% of the CPU against the other 30%, and the execution times remain around 37 seconds for the program with higher priority and around 50 second for the other.
+
+Exercise 5:
+
+Using the renice command, we changed the priority of the integers program, and the distribution of CPU went from 50/50 to 70/30, which is equivalent to using the nice command in runtime.
+
+Exercise 6:
+
+During 1min of execution, the "active" program counted 1 voluntary switch and 81 non voluntary switches, whereas the "passive" program counted 60 voluntary switched and 0 non voluntary switches.
+
+The state value of the active program was R (which indicates running) all the time it was being executed. The passive program however had a state value of S (which indicates sleeping).
+
+Exercise 7:
+
+Using the lscpu command, we find out that we have 12 CPUs (hardware threads). 
+
+Average elapsed time (over 3 runs):
+a. Single instance: 6.45 seconds
+b. 12 instances (as many as CPUs): 11.74 seconds
+c. 14 instance (as many as CPUs + 2): 13.90 seconds
+
+Note: to compute b. and c. we used the longest time out of all instance runs.
+
+This seems to make sense:
+- for case b. the program is slower as it has the overhead associated to splitting the work between all the processors and there are probably more L2 misses as threads in the same core (2) share it.
+- for case c. the program is even slower as it not only deals with all of the things mentioned in the paragraph above, it also has more programs to run than threads and therefore there isn't a thread working on each program at all times, hence it being slower.
+
+Exercise 8:
+
+We are using MacOS, which is fairly similar to Linux. The ps command is available on macOS, and works in similar fashion as in Linux.

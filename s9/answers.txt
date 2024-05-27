@@ -1,0 +1,167 @@
+
+Exercise 1:
+The main function keeps track of the pointer *ptr. It prints its initial location and the address it holds at the beginning, then it assigns the address of GlobalVar to ptr, and checks that the address it stores and value it points to is indeed the same as GlobalVar. Afterwards, it prints the size of the heap, and then it calls the Recursivity function.
+The Recursivity function declares the variable LocalVar at each recursion level, and prints its value and location.
+
+
+
+
+Exercise 2:
+When executing the function, we can see that after we assign to ptr the address of globalVar, the address we have stored and the value it points to coincides with globalVar. Additionally, before calling the Recursivity function, the size of the heap is 0, which makes sense because we haven't allocated any memory to the heap.
+When executing the Recursivity function, we can see that at each level or recursion localVar gets assigned a new memory position, with a new value, because a new instance is created for every time we call the function. Additionally, each new recursion level gets assigned a lower memory address, which makes sense as the stack grows downwards. Finally, when returning to the previous recursion levels, we go back up to higher memory addresses, which still store the corresponding value for their recursion level.
+
+
+
+
+Exercise 3:
+The main function keeps track of the size of the heap. It takes an integer as a parameter and creates a pointer that points to an array with that length. The main function then compares the size of the array (in Bytes) to the amount of heap memory that has been allocated. Finally, it frees the pointer that contained the array and once again checks the amount of memory in the heap.
+Execution with 1000 (4000 Bytes): Initially the heap has 0 Bytes, because we haven't allocated any memory. After we create the array, the heap has 135168 Bytes. The array only occupies 4000 Bytes, but the heap has allocated more memory because it expects that we will need more memory in the future. Once we release the memory we were using, the heap still has 135168 Bytes.
+Execution with 10000 (40000 Bytes): We observe that the same amount of memory is allocated as the previous case.
+Execution with 8000000 (32000000 Bytes): Initially, as with the previous cases, the heap has 0 Bytes. After we create the array, the heap grows to 32133120 Bytes. This is different from the previous cases, because the initial memory allocation for the previous cases (135168 Bytes) is not enough memory for this array. Once we release the memory, the heap shrinks back to 135168 Bytes, because it doesn't need as much memory anymore. We can hypothesise that the heap didn't shrink for the previous cases because 135168 might be the minimum amount of memory that can be allocated to the heap (when it grows from 0 Bytes).
+Additionally, for all the cases we tried the memory address of the last element of the array was higher that the address of the first element, which makes sense because the heap grows upward, to higher memory positions.
+
+
+
+
+Exercise 4:
+To find the code region, we look at the row that has read and execute permissions but not write, and to find the data region we look at the row that has read and write permissions but not execute.
+
+For mem-stack 3:
+- First checkpoint: code has address range 00400000-00401000: 4096 Bytes = 4 KBytes
+		    data has address range 00602000-00603000: 4096 Bytes = 4 KBytes
+		    heap does not have memory allocated
+		    stack has address range 7ffde6d3d000-7ffde6d5f000: 139264 Bytes = 136 KBytes
+The size of each region stays the same for every checkpoint, because code and data can't be modified, and the stack doesn't change because the amount of memory we need does not surpass the amount that has already been allocated at the first checkpoint. Additionally, the 3 instances of localVar are stored in addresses 0x7ffde6d5c508, 0x7ffde6d5c3d8 and 0x7ffde6d5c2a8, which are within de range of the stack.
+
+For mem-heap-orig 8000000:
+- First checkpoint: code has address range 00400000-00401000: 4096 Bytes = 4 KBytes
+		    data has address range 00602000-00603000: 4096 Bytes = 4 KBytes
+		    heap does not have memory allocated yet
+		    stack has address range 7ffe332a1000-7ffe332c3000: 139264 Bytes = 136 KBytes
+
+- Second checkpoint: code, data and stack have not changed
+		     heap has address range 0080d000-026b2000: 32133120 Bytes = 31380 KBytes
+		     This is consistent with what we see in the output, which says that the heap occupies 32133120 Bytes, that the address of the first element is 0x80d2a0 and the last element has address 0x2691a9c, which are within the address range of the heap.
+
+- Third checkpoint: code, data and stack have not changed
+		    heap has address range 0080d000-0082e000: 135168 Bytes = 132 KBytes
+		    This is consistent with the output of the execution, which says that the heap occupies 135168 Bytes.
+
+The fact that the size of the code, data and stack regions, because code and data can't be modified, and the stack does not need extra memory.
+
+
+
+
+Exercise 5:
+Note: the previous exercises have been executed in a desktop. From now on we are executing them on a virtual machine.
+
+We execute mem-stack-2.c, with 10 recursion levels.
+When we execute the code with no modifications the size of the stack does not vary, at every iteration it always occupies the range 7ffe51dfb000-7ffe51e1c000, and has a size of 135168 Bytes = 132 KBytes.
+When we change the size of buf to 1000 chars, the stack initially (at the first checkpoint) occupies the range 7fff1e8b2000-7fff1e8d3000, which is 135168 Bytes = 132 KBytes. However, the stack does not change size during the execution. This is because the 10 instances of buf occupy 1000*10 = 10000 Bytes (1 char = 1 Byte), which is much smaller than 135168 Bytes (there are other variables stored in the stack, but they don't take up a lot of memory either). Therefore, we don't need to ask for more memory that what was initially granted when we first asked for memory.
+We decide to change the size of buf to 135168 chars, which will occupy the entire stack at the first iteration, and since we have other variables that we need to store we will have to ask for more memory. When we execute the code, the stack occupies the following ranges:
+
+- Before calling Recursivity: 7ffed805f000-7ffed8080000. 135168 Bytes = 132 KBytes
+- 1st iteration: 7ffed805c000-7ffed8080000. 147456 Bytes = 144 KBytes
+- 2nd iteration: 7ffed803b000-7ffed8080000. 282624 Bytes = 276 KBytes
+- 3rd iteration: 7ffed801a000-7ffed8080000. 417792 Bytes = 408 KBytes
+- 4th iteration: 7ffed7ff9000-7ffed8080000. 552960 Bytes = 540 KBytes
+- 5th iteration: 7ffed7fd8000-7ffed8080000. 688128 Bytes = 672 KBytes
+- 6th iteration: 7ffed7fb7000-7ffed8080000. 823296 Bytes = 804 KBytes
+- 7th iteration: 7ffed7f96000-7ffed8080000. 958464 Bytes = 936 KBytes
+- 8th iteration: 7ffed7f75000-7ffed8080000. 1093632 Bytes = 1068 KBytes
+- 9th iteration: 7ffed7f54000-7ffed8080000. 1228800 Bytes = 1200 KBytes
+- 10th iteration: 7ffed7f33000-7ffed8080000. 1363968 Bytes = 1332 KBytes
+
+We can see that after the second iteration the stack grows 132 Kbytes at every iteration, which is a bit more than we need to fit the array. Additionally, we can see that the stack grows to lower memory positions, which is consistent with what we saw in theory.
+
+
+
+Exercise 6:
+
+input parameter 10: Initially, in the top command we can see that VIRT = 2356 (the amount of virtual memory). Additionally, the heap occupies no memory. After the first iteration, the heap occupies memory addresses 559258491000-5592584b2000, which corresponds to 135168 Bytes = 132 KBytes. Additionally, VIRT = 2488 (we see an increase in 132 KBytes). However, the size of the heap does not change after the next iterations, because the memory that was allocated for the heap at the beginning is enough for the amount of memory that we want (we were granted more memory than we asked for at the beginning because the OS anticipated that we would need more). This is consistent with what we see in the execution output, which says that the heap always occupies 135168 Bytes.
+
+input parameter 8000000: Initially, in the top command we see VIRT = 2356, and the heap occupies 0 Bytes.
+- 1 iteration: 55bd90699000-55bd9253e000: 32133120 Bytes. VIRT = 33736
+- 2 iterations: 55bd90699000-55bd943c3000: 64135168 Bytes. VIRT = 64988
+- 3 iterations: 55bd90699000-55bd96247000: 96133120 Bytes. VIRT = 96236
+- 4 iterations: 55bd90699000-55bd980cc000: 128135168 Bytes. VIRT = 127488
+- 5 iterations: 55bd90699000-55bd99f50000: 160133120 Bytes. VIRT = 158736
+- 6 iterations: 55bd90699000-55bd9bdd5000: 192135168 Bytes. VIRT = 189988
+- 7 iterations: 55bd90699000-55bd9dc59000: 224133120 Bytes. VIRT = 221236
+- 8 iterations: 55bd90699000-55bd9fade000: 256135168 Bytes. VIRT = 252488
+- 9 iterations: 55bd90699000-55bda1962000: 288133120 Bytes. VIRT = 283736
+- 10 iterations: 55bd90699000-55bda37e7000: 320135168 Bytes. VIRT = 314988
+
+We can see that the size of the heap increases at each iteration so that we can allocate more memory, because in total we are allocating memory for 10 arrays. We also see that, as expected, the heap expands towards higher memory addresses.
+
+
+
+
+Exercise 7:
+input parameter 10: The first time we ask for memory, the heap takes size 135168 Bytes, and the size remains constant throughout the program.
+
+input parameter 8000000: The first time we ask for memory, the heap takes size 32133120 Bytes. However, before we allocate memory at the next iteration, we free the memory that we have just allocated, so the heap does shrinks to 135168 Bytes. At the next iteration, we need more memory again, so the heap grows to 32133120 Bytes, and then shrinks again to 135168 Bytes. This process is repeated for the rest of the iterations. We never need more than 32133120 Bytes because we only have one instance of the array at a time.
+
+
+
+
+Exercise 8:
+We use the following command to statically link the binaries: gcc -o mem-heap-static mem-heap-orig.c -static
+
+Statically linked: The code section occupies the address range 00401000-00496000, which occupies 610304 Bytes. This is significantly larger than the dynamically linked code, because it includes all the libraries.
+
+Dynamically linked: The code section occupies the address range 55ff9cf79000-55ff9cf7a000, which occupies 4096 Bytes. However, the output of the maps command includes references to the memory addresses of the dynamically linked libraries, which we didn't see for the static case.
+
+
+
+
+Exercise 9:
+
+1. Using array module:
+Before creating first vector:
+VIRT: 17676 K
+heap: aaaad4ad8000-aaaad4c29000
+Checked pmap output.
+
+After creating first vector:
+VIRT: 48992 K 
+heap: new region added, ffffa6dab000-ffffa8c30000, on top of the already existing aaaad4ad8000-aaaad4c29000 [heap].
+We also see a new line added to pmap: 0000ffffa6dab000  31252K rw---   [ anon ], which corresponds to the amount of memory that our array requires.
+The command to get the size of the vector yields 32000080.
+
+After creating second vector:
+VIRT: 111496 K
+heap: we see a new region added, ffff9dde9000-ffffa1af3000. We also see a new line added to the pmap output: 0000ffff9dde9000  62504K rw---   [ anon ]
+which by the range it covers likely corresponds to our vector.
+
+2. Using numpy:
+Before creating first vector:
+VIRT: 187596K
+heap: aaaad92f4000-aaaad9445000.
+Checked pmap output.
+
+After creating first vector:
+VIRT: 218932K
+heap: we see a new region defined, ffff82aba000-ffff82abb000. We see two new lines added to the pmap output: 0000ffff82abb000  31248K rw---   [ anon ] and 0000ffff82aba000      4K rw---   [ anon ].
+The output of the command to get the vector size yields 32000112.
+
+After creating second vector:
+VIRT: 281692K
+heap: two regions have been created, ffff7edb0000-ffff7edb1000 and
+ffff7edb1000-ffff82aba000, the second of which likely corresponds to our vector seeing as they match in size. There is also two new lines added in the pmap output: 0000ffff7edb1000  62500K rw---   [ anon ] and 0000ffff7edb0000      4K rw---   [ anon ]. The command that yields the size of the vector output 64000112.
+
+Using lists:
+Before creating the vector:
+VIRT: 17676K
+heap: aaaad9f27000-aaaada078000
+Checked pmap output.
+
+After creating the vector:
+VIRT:80180K
+heap: new region added ffff840a6000-ffff87db0000.
+Also, we have a new line in the pmap output: 0000ffff840a6000  62504K rw---   [ anon ]. The command for the size of the vector yields 64000056.
+
+After creating the second vector:
+VIRT: 142684K
+heap: we see that the region previously created disappeared, and now a new region has been created ffff8039c000-ffff87db0000 which seems to englobe both vectors. Similarly, the mapping shown in pmap disappeared and the new mapping 0000ffff8039c000 125008K rw---   [ anon ]
+appeared. It seems that the OS dynamically changed the mapping, destroying a region and creating a new one, and associating both vector into the new region and having the mapping from the addresses to that region.

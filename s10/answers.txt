@@ -1,0 +1,104 @@
+Exercise 1:
+After creating first terminal, we print the contents of /dev/pts and obtain the following:
+total 0
+crw--w---- 1 paula.esquerra tty  136, 0 May  9 10:55 0
+c--------- 1 root           root   5, 2 May  9 10:08 ptmx
+
+After opening new terminal, we can see that the contents of the folder have changed, and now they include the file of the second terminal:
+total 0
+crw--w---- 1 paula.esquerra tty  136, 0 May  9 10:57 0
+crw--w---- 1 paula.esquerra tty  136, 1 May  9 10:57 1
+c--------- 1 root           root   5, 2 May  9 10:08 ptmx
+
+The major number for the terminal device is 136 and the minors for the first and second instances of the terminal are 0 and 1 respectively.
+
+
+
+Exercise 2:
+The code uses the read and write functions (sys calls) to read and write respectively from and to the terminal. It does this character by character. It reads the character in char c, writes its contents and overwrites it later. This is done through stdin (0) and stdout (1).
+
+
+
+Exercise 3:
+We want to write from a terminal to another, that is show the output of what we write in one instance in another instance.
+
+This is done with the following command: ./iochars 1> /dev/pts/2
+
+This means we are writing (>) in the terminal (stdout:1) to the device with path of redirection /dev/pts/2 which is the path to another instance of the terminal, instance 2.
+
+When we look at the File Descriptor Table of the process in /proc/PID/fd, we see the following:
+total 0
+lrwx------ 1 alumne alumne 64 may  9 17:18 0 -> /dev/pts/0
+l-wx------ 1 alumne alumne 64 may  9 17:18 1 -> /dev/pts/2
+lrwx------ 1 alumne alumne 64 may  9 17:18 2 -> /dev/pts/0
+
+As expected we have directed output in stdout (1) to the instance of the terminal number 2 (/dev/pts/2).
+
+
+
+Exercise 4:
+We define:
+char buf[100];
+and change read and write arguments to point to buf and the size of buf instead of c and the size of c. Additionally, we write only as many characters as we read, so we change the last argument of write to ret.
+
+
+
+Exercise 5:
+We use the following command to read the input from exempleText.txt, pass it to iochars and then write the output in output.dat:
+strace -o output.dat -e read,write ./iochars < exempleText.txt
+
+We use the following command to read the input from exempleText.txt, pass it to iochars-v2 and then write the output in output2.dat:
+strace -o output2.dat -e read,write ./iochars < exempleText.txt
+
+When looking at output.dat and output2.dat, we can see that the difference in is that the first program reads char by char and the second reads blocks of 100 bytes. This makes sense because iochars has to read and overwrite only one char (char c), while iochars-v2 has a buffer of 100 chars.
+
+
+
+Exercise 6:
+We use the following command to redirect the output from ioints to the file output.dat:
+./ioints 10 3> output.dat
+In the code we have the write function with fd=3, meaning that we write to the device with fd=3. In the command line, we indicated that the output towards the device with fd=3 should be redirected to output.dat, thus creating a new line in the File Descriptor Table of the process running the program with fd=3 and points to /home/alumne/Desktop/S10/output.dat.
+Additionally, when executing the command xxd output.dat, we can see that the files stores 10 integers, from 0 to 9, which is the output that we would expect from the program.
+
+
+
+Exercise 7:
+We use the following command to redirect the output from ioints to the file output.dat:
+./ioints 10 3> output.dat
+
+We then use the following command to write the content of output.dat in copiedOutput.dat, integer by integer:
+./copyFile1 output.dat 10 1> copiedOutput.dat
+As intended we find that the content of copiedOutput.dat is the same as the content of output.dat: we see 10 integers, from 0 to 9 in ascending order, expressed in hexadecimal format.
+
+
+
+Exercise 8:
+We use the following command to redirect the output from ioints to the file output.dat:
+./ioints 10 3> output.dat
+
+We then use the following command to write the content of output.dat in copiedOutput.dat, all at once:
+./copyFileN output.dat N 10 1> copiedOutput.dat
+N can take any positive value, and the program will read N numbers at a time.
+As intended we find that the content of copiedOutput.dat is the same as the content of output.dat, and the same as the previous exercise, for the different values of N that we try.
+
+
+
+Exercise 9:
+copyFile1: We execute the command usr/bin/time ./copyFile1 output.dat 1000000 1> CopiedOutput.dat, and we see that the elapsed time is 2.60 seconds.
+
+copyFileN: We execute the command usr/bin/time ./copyFileN output.dat N 1000000 1> CopiedOutpud.dat, where N takes different values.
+- N = 1: 2.99 seconds.
+- N = 10: 0.30 seconds.
+- N = 100: 0.05 seconds.
+- N = 1000: 0.00 seconds.
+- N = 10000: 0.00 seconds.
+- N = 100000: 0.00 seconds.
+- N = 1000000: 0.00 seconds.
+
+We can see that for N=1 the time taken is the same as copyFile1, which is what we would expect because in both cases we are reading one integer at a time. As N increases, the time decreases. We can relate this to the number of syscall invocations. When N=1, we call both the read and write functions 1000000 times, which takes a lot of time. However, as we increase N, we will only have to call the read and write functions 1000000/N times each, which saves time. In the best case, for N=1000000, we only call these functions once.
+
+We double check this conclusion by doing a similar analysis to exercise 5. We use the following commands:
+/usr/bin/time strace -o syscalls.dat -e read,write ./copyFile1 output.dat 1 1000000 1> CopiedOutput.dat
+/usr/bin/time strace -o syscalls.dat -e read,write ./copyFileN output.dat N 1000000 1> CopiedOutput.dat
+
+By looking at syscalls.dat, we can see that the number of syscall invocations is indeed 1000000/N for read and for write (in the case of copyFile1 it is 1000000 calls for each function). Note: when executing the command with strace, the elapsed time is significantly longer for all cases (although the conclusions drawn are the same). We have assumed that this is because writing the syscalls in syscall.dat is a time-consuming operation.

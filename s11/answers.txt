@@ -1,0 +1,25 @@
+Exercise 2:
+When executing exercise2A.c, we can see that we get the expected results: we have one message for each thread ID. This is because when we declare char buf[256] inside the parallelized code, the variable will be private, so there is no interference between threads and each message has its corresponding thread ID.
+
+On the other hand, when we execute exercise2B.c, we don't always see one message for each thread ID. Sometimes, there is more than one message for one thread ID, and some thread ID's don't appear in any messages. This is because when we define char buf[256] outside the parallelized code, the variable is shared. Therefore, a race condition might take place, where 2 threads try to modify the variable at the same time (or one thread modifies the variable before the other thread has a chance to print it), so one thread could output a message with the ID of another thread. Sometimes the race condition won't take place and we will see one message with every thread ID, but the code is still wrong.
+
+
+Exercise 3:
+It is not specified where we should declare the variables i and var. We have decided to declare i inside the parallelized region and var outside.
+
+When we execute exercise3A.c, we see that the loop is executed by 1 thread (with thread ID 0). This is what we would expect, because we have not declared more threads, so there is no parallelization. When we execute exercise3B.c with 10 threads, we can see that the loop is executed 10 times, once by each thread. This is because with the "parallel" directive each thread will execute the same code. Finally, when executing exercise3C.c with 10 threads, we can see that each thread executes one iteration. This is because the #pragma omp for directive splits the work in the parallelized region between the threads. For the last 2 programs, var does not necessarily correspond to the iteration number i, because since var is a shared variable we can have race conditions.
+
+In exercise3D.c, the variable var is privatized for each thread, so we won't have a race condition anymore. This time, when we print the message at every iteration, var always matches the iteration number.
+
+exercise3F.c behaves exactly the same as exercise3C.c, because since var is defined outside the parallelized region it is shared by default.
+
+In exercise3F.c we see coherent behaviour. This is because the critical section can only be executed by one thread at a time, which means that we won't have a race condition.
+
+
+Exercise 4:
+
+- We see that the more threads we add, the slower we get. Even though this seems like a very parallel application, where we are free of dependencies between tasks, we are still facing the possibility of a race condition as different threads reading will update the histogram at the same time if not prevented. Therefore, both this and the totalCount of chars read need to be protected, and the fastest way to do this is to include a reduction(+:histo,totalCount) clause to protect histo and totalCount when doing sum. Even though this is the fastest way to protect the variables, what the clause does is create a temporary variable for each thread and the operate in a protected manner at the end, accumulating partial results. This means that we will have as many computations as number of threads times 128+1, which means the overhead here scales linearly on the number of threads with a significant coefficient. Even though the reading is done in parallel, these update computations hog the time that is gained and eventually surpass it making it slower each time.
+- Now, if we change the buffer size to 1000, the amount of times we put in motion the reduction is divided by 1000, and therefore we make 1000 times less local copies of hist to accumulate the results. This now helps the performance, as we see by the times obtained: with 1 thread, it takes 0.002835s, with 2 threads, it takes 0.001516s, with 4 threads, it takes 0.000507s, with 8 threads, it takes 0.004708s, and with 16 threads it takes 0.002539s.
+We observe that the parallelism helps until a certain point where the overhead gets so big with respect to the time taken by the program that it gets progressively less better, and even gets worse.
+
+

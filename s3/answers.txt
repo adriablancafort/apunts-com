@@ -1,0 +1,27 @@
+// To perform a merge between the development branch and the master branch we used the following command:
+
+git merge development master
+
+// We did not run into any conflicts. To delete the now unused development branch we used the following command:
+
+git branch -d development
+
+// Here is the message we obtained:
+
+* commit 704783f39052d8931f3f0b840391851514ca9b21 (HEAD -> master)
+| Author: Paula <paula.esquerra@estudiantat.upc.edu>
+| Date:   Tue Mar 7 10:39:50 2023 +0100
+| 
+|     second modification including a print
+| 
+* commit 1b1d18050abe661c5d5e8b0b78e35b2754c189a0
+| Author: Paula <paula.esquerra@estudiantat.upc.edu>
+| Date:   Tue Mar 7 10:22:48 2023 +0100
+| 
+|     this is a modification
+| 
+* commit e22006f08f5564a02efa8bb9620014f73b503c43
+  Author: Paula <paula.esquerra@estudiantat.upc.edu>
+  Date:   Tue Mar 7 10:20:47 2023 +0100
+  
+      This is the first file

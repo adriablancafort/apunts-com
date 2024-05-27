@@ -1,0 +1,86 @@
+Exercise 1:
+To list the program source we use the command list, which also indicates with an arrow the line in which the execution stopped.
+
+Exercise 2:
+To display values we can use the commands display or p.
+The value of sys.argv is a list of strings: ['./fib.py', '4']
+Before executing the line "argc = len(sys.argv)", the value of argc is undefined.
+
+Exercise 3:
+After another "next", the line "argc = len(sys.argv)" is executed and argc takes the value of 2. It hasn't been displayed automatically because it hasn't changed its value, it just didn't have one previously.
+
+Exercise 4:
+We can't see the variable num because it hasn't been defined inside the fibonacci function so it's outside the scope. If we use the up command we can see the value num (by using the display command), and afterwards by using the down command we go back to the fibonacci function.
+
+Exercise 5:
+By using the where command we can see that there are 3 recursive calls to the fibonacci function. By using up 3 times we go back to the main function and we are able to display "num" again, which has a value of 4.
+
+Exercise 6:
+We get the following error message:
+Us. ./fib.py <number>
+	where <number> is the number from which to compute fibonacci(number)
+This is because we're giving argc a value different than 2, prompting an error message from the program, designed to prevent a misuse of the fibonacci function.
+
+Exercise 7:
+We set a breakpoint in the line num = strtol(argv[1], NULL, 0); by using "break 18"
+To set a breakpoint in the fibonacci function we use "break fibonacci"
+
+Exercise 8:
+We use the next command to execute the current line, and then we use "display num" to see that the value of num is 6.
+
+Exercise 9:
+- num = 2: we execute finish 5 times.
+- num = 3: we execute finish 9 times.
+- num = 4: we execute finish 17 times.
+- num = 5: we execute finish 29 times.
+- num = 6: we execute finish 49 times.
+We can see that if p(n) is the number of "finish" needed to execute the program, then p(n) = p(n-1) + p(n-2) + 3, as we call fibonacci of n-1 and n-2, and we also need to count the beginning of the calls and the end of the last call.
+
+Exercise 10:
+After reaching 6 levels of depth, n = 4.
+To go up to the next stack frames, we use the command up.
+The value of n in recursion level x is 10-x.
+
+We delete the breakpoint by using "delete breakpoints". We let the program continue by using the continue command. The result is 55, which is still correct.
+
+Exercise 11:
+"Print" prints the value of the expression
+"Display" prints the value of the expression each time the program stops.
+
+Exercise 12:
+We change the value of argc by using "set argc=1"
+It gives us the same error we got with the python program:
+Us: /home/Nathaniel/Documents/S5/fib <number>
+	where <number> is the number from which to compute fibonacci(number)
+
+Exercise 14:
+We will run Fibonacci 40 as 30 was too fast on our device.
+Python: Running the command /usr/bin/time ./fib.py yields a time of 0:16.90 (16.9 seconds)
+C (fib): Running the command /fib yields a time of 0:00.46 (0.46 seconds)
+C (fib0): Running the command /fib0 yields a time of 0:00.46 (0.46 seconds)
+C (fib1): Running the command /fib1 yields a time of 0:00.38 (0.38 seconds)
+C (fib2): Running the command /fib2 yields a time of 0:00.17 (0.17 seconds)
+C (fib3): Running the command /fib3 yields a time of 0:00.17 (0.17 seconds)
+
+We see that the C code in its base compilation form is already over 30 times faster than the
+Python code, and it gets faster when using more heuristics from the compilation types: O1 is a
+0.08 second improvement from O0, O2 is more than two times faster than O1, yielding a
+0.21second improvement, and O3 performs just as well as O2. The speed difference is also due
+to the fact that python is interpreted and C is compiled, and therefore the execution of C code is
+already in binary because the executable is already there, whereas with Python it’s doing the
+steps from high level code to machine code in execution time, which takes time and results in it
+being slower.
+
+Exercise 15:
+We run Fibonacci 30 on this.
+Using valgrind we find out that:
+- 2935850892 instructions were executed to run the program fib.py
+- 47039554 instructions were executed to run the program fib
+- 47039554 instructions were executed to run the program fib0
+- 32427145 instructions were executed to run the program fib1
+- 22465938 instructions were executed to run the program fib2
+- 22465938 instructions were executed to run the program fib3
+
+We see that this is more or less proportional to the runtime taken, with some differences due to
+the nature of the C compiler optimisation methods, using methods such as loop unrolling or
+function inlining, that could take more events.

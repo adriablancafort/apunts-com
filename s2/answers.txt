@@ -1,0 +1,35 @@
+Exercise 3 
+To modify the permissions of the test file to have only write permission for the owner, its group and the rest of users we need to use the command chmod ugo=-w- test.
+When trying to do a cat, permission is denied because we do not have permission to read the file.
+
+Exercise 4
+To obtain a list of the folder contents which includes only the directories, we execute the following command: ls -l | grep ^d. With this command, we are selecting the lines that start with the letter d (indicating that they are directories) from the results obtained from executing ls -l.
+
+Exercise 5
+The directories in the root directory are:
+- bin: seems to contain the executable files for certain commands such as grep, more, less, etc. Further research shows us it is the path where the system stores binaries of executables.
+- home: contains a directory named with the username which contains the home directory itself.
+- dev: contains c type files, which further research showed to be character devices, such as tape drives and serial ports. These are special files.
+- mnt: was empty, and further research showed it’s used as a mount point for temporary media.
+- proc: configuration parameters of the system, such as the way files are encrypted.
+- run: seems to manage networks, vpn and things pertaining to connections from and to the computer.
+- snap: presents installed snap packages.
+- tmp: contains files that have a temporary lifespan, that one may need for something else and then not anymore. We might consider periodically deleting the contents of it.
+- boot: as its name indicates, it contains files pertaining to the booting of the OS.
+- var: contains a subset of the directories present in the root directory, and with further research we confirm that it is destined for files whose size is variable.
+- etc contains vim and nano, that is the files needed to run these in-command text editor. Further research shows it contains all system configuration files.
+- lib: contains all standard libraries that the system needs.
+- media: is empty, supposedly where media files are to be stored.
+- opt: is empty, and is supposedly reserved for the installation of add-on application software packages.
+- sbin: contains executable programs.
+- srv: is empty, and supposedly contains site-specific data that is served by the system.
+- sys: contains an interface to the kernel, indicated by further research.
+- usr: contains read-only files installed by (or provided by) the OS, further research indicates.
+
+Exercise 6
+PWD stores the path of the current directory, which is why its value changes when we change directories. Similarly, HOME contains the path of the home directory, and PATH contains the path where the OS looks for executable programs.
+
+Exercise 7
+When executing 40a            hello world.
+
+From this we deduce that file lists name of the file and content type, for example in a text file it contains ASCII text, od lists the content of the file in octal format, and xxd shows the content of the file in hexadecimal format.

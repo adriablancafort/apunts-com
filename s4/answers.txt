@@ -1,0 +1,23 @@
+Exercise 3
+
+#First, we use the nm command on the executable files:
+
+1. We identify the following symbols in the object file: fprintf (function in stdio.h to print objects), fibonacci (function in fib.h used to compute the nth fibonacci number)
+
+2. In the object one, we see the column table is U,T,C which stand for the symbol being Undefined, in the text code section and common (uninitialised) respectively. The symbols found in the object files are exit, fibonacci, fprintf, main, printf, result, stderr, strtol. We notice that these symbols are present in the executable, however not always with the same column letter: stderr has symbol B in the executable file and column letter U in the object file.
+
+3. According to the manual, the column letter d refers to the fact that the symbol is in the initialised data section, the column letter T refers to the fact that the symbol is in the text code section, and U refers to the fact that the symbol is undefined.
+
+
+Exercise 4
+
+1. We observe that the fibonaccistatic binary has 1478 lines of text, whereas the fibonacci binary has 64 lines. This is due to the fact that when linking the libraries in a static manner the content of the library is included in the binary, and therefore it takes up a lot of lines of the file and when the libraries are linked dynamically the fetch to the library functions is done in execution time and we therefore do not need to include the binary code for them, making the executable much smaller. If we want the comparison in number of characters, the fibonaccistatic file has 650904 characters whereas the fibonacci file has 9240 characters.
+
+2. In the fibonacci binary, the fibonacci function has column character T, which stands for text code section. In the fibonaccistatic library, it also has the column character T.
+
+We can see new symbols appear in the fibonaccistatic file, namely W: this is a weak symbol indicating that the system tagged the object as a weak object symbol.  When a weak defined symbol is linked with a normal defined symbol tagged as a weak object symbol.  When a weak defined symbol is linked with a normal defined symbol, the normal defined symbol is used with no error. This appears because as we are statically linking, and all of the linking goes through the binary, which explains the necessity of defining weak symbols that will be linked in the compilation phase. When linking dynamically, the libraries are accessed in execution time and there is therefore no need to include weak symbols in the binary file, as we don't need to predefine anything, all will be accessed in the dynamic linking phase.
+
+
+Exercise 5
+
+In terms of execution time, we see that for matmul-0 it takes 6.576886s, for matmul-1 it takes 1.551491s, for matmul-2 it takes 2.064108s, and for matmul-3 it takes 2.033737s. This makes sense, as the further we increase the number option in the compiler, the more optimizations we try, and the more we risk it actually slowing down instead of speeding up as they are expensive heuristics. The first optimization with O1 works well, reducing the time from 6.5s to 1.5s, however both O2 and O3 fail to optimize the value from O1, staying over 2s. This means the code can hardly be optimised further, and we are just adding overhead with the optimisation computation. We can also notice an increase in the size of the binary files matmul-0, matmul-1 and matmul-3 with respect to matmul-0, of about 80-100 characters. This is due to the fact that some optimization heuristics used by O1,O2 and O3 use more memory, that is make a larger file, such as loop unrolling used in O3 for example or function inlining.

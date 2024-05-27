@@ -1,0 +1,77 @@
+Exercici 1:
+1.a) Sense comptar el nom de l'executable (argv[0]), un únic paràmetre (array chars) per indicar el nom del fitxer d'entrada. 
+
+1.b) Si "c" és un integer i llegeix 4 bytes, la key s'hauria d'aplicar per cada byte. Ara bé, sigui char o int no tindrem problemes en fer la suma, perquè si el valor es passa de rang torna a començar de zero.
+
+1.c) Estem canviant el file descriptor que utilitza el write i posant el corresponent a "STDERR". Ara bé, també està associat a la terminal i per tant no passa res.
+
+2.a) Estant en el directori "Exercici1" executem:
+mkdir v2
+després executem:
+cp -i encriptador.c v2/encriptador_v2.c
+
+2.b) Estant en el directori "Exercici1" executem:
+mv key.c v2/.
+
+
+3) Hem d'editar el fitxer "key.h". A més, incloure "#include "key.h"" i, per últim, actualitzar la línia de compilació:
+gcc -o encript_v2 encriptador_v2.c key.c
+
+
+############
+Exercici 2:
+1) Es pot mirar amb l'eina "lstopo". La línia de comandes és "#>lstopo"
+indica que té 6 cores (0..5) amb 2 PUs (Hw threads) cadascun
+
+2)posaria les línies:
+/usr/bin/time  ./proc1
+23.14user 0.00system 0:23.14elapsed 99%CPU (0avgtext+0avgdata 1092maxresident)k
+0inputs+0outputs (0major+69minor)pagefaults 0swaps
+/usr/bin/time  ./proc2
+23.17user 0.00system 0:23.18elapsed 99%CPU (0avgtext+0avgdata 1072maxresident)k
+0inputs+0outputs (0major+69minor)pagefaults 0swaps
+
+Es a dir, és el temps d'elapsed i percentatge que indica just abans de "CPU"
+
+
+3)./launch.sh 0 ./proc1  0 ./proc2
+Mostra els següents resultats:
+23.15user 0.00system 0:46.31elapsed 49%CPU (0avgtext+0avgdata 1992maxresident)k
+32inputs+0outputs (0major+166minor)pagefaults 0swaps
+23.20user 0.00system 0:46.36elapsed 50%CPU (0avgtext+0avgdata 1988maxresident)k
+40inputs+0outputs (0major+167minor)pagefaults 0swaps
+
+El temps d'elapsed augmenta (de 23 a 46 segons) i el percentatge d'ús de la CPU passa del 100% al 50%. Per tant hi ha contenció en l'ús de recursos hardware i això fa degradar el rendiment d'aquests programes augmentant el temps que triguen en acabar.
+
+
+4)Es llença a executar amb la línia:
+./proc3
+abans de finalitzar, es consulta el fitxer /proc/<PID>/maps
+Presenta les següents dades:
+5635da208000-5635da209000 r--p 00000000 00:38 24230814                   /dades/javier.verdu/Documents/COM/ProvaLab-vA/Exercici2/proc3
+5635da209000-5635da20a000 r-xp 00001000 00:38 24230814                   /dades/javier.verdu/Documents/COM/ProvaLab-vA/Exercici2/proc3
+5635da20a000-5635da20b000 r--p 00002000 00:38 24230814                   /dades/javier.verdu/Documents/COM/ProvaLab-vA/Exercici2/proc3
+5635da20b000-5635da20c000 r--p 00002000 00:38 24230814                   /dades/javier.verdu/Documents/COM/ProvaLab-vA/Exercici2/proc3
+5635da20c000-5635da20d000 rw-p 00003000 00:38 24230814                   /dades/javier.verdu/Documents/COM/ProvaLab-vA/Exercici2/proc3
+5635da27d000-5635da29e000 rw-p 00000000 00:00 0                          [heap]
+7f7033079000-7f703325f000 r-xp 00000000 103:07 308705                    /lib64/libc-2.31.so
+7f703325f000-7f703345f000 ---p 001e6000 103:07 308705                    /lib64/libc-2.31.so
+7f703345f000-7f7033462000 r--p 001e6000 103:07 308705                    /lib64/libc-2.31.so
+7f7033462000-7f703346a000 rw-p 001e9000 103:07 308705                    /lib64/libc-2.31.so
+7f703346a000-7f703346e000 rw-p 00000000 00:00 0 
+7f703346e000-7f7033498000 r-xp 00000000 103:07 273230                    /lib64/ld-2.31.so
+7f7033643000-7f7033646000 rw-p 00000000 00:00 0 
+7f7033696000-7f7033698000 rw-p 00000000 00:00 0 
+7f7033698000-7f7033699000 r--p 0002a000 103:07 273230                    /lib64/ld-2.31.so
+7f7033699000-7f703369b000 rw-p 0002b000 103:07 273230                    /lib64/ld-2.31.so
+7fff77500000-7fff77522000 rw-p 00000000 00:00 0                          [stack]
+7fff775f7000-7fff775fb000 r--p 00000000 00:00 0                          [vvar]
+7fff775fb000-7fff775fd000 r-xp 00000000 00:00 0                          [vdso]
+ffffffffff600000-ffffffffff601000 --xp 00000000 00:00 0                  [vsyscall]
+
+Les regions que posa "[stack]" i "[heap]" corresponen a lo que indica el seu nom.
+La regió 5635da209000-5635da20a000 té els permisos de "r-x" amb l'etiqueta "proc3" i per tant és codi
+Una pàgina de memòria (4KB)
+La regió 5635da20c000-5635da20d000 té els permisos de "rw-" amb l'etiqueta "proc3" i per tant és dades (variables globals)
+Una pàgina de memòria (4KB)
+Com té regions de les llibreries (codi i dades, entre altres) significa que està enllaçat dinàmicament

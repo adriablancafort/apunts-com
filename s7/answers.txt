@@ -1,0 +1,114 @@
+Exercise 1:
+
+The computer we are working on has an x86_64 architecture, an Intel (R) Core (TM) i5-10500 CPU.
+
+The processor frequencies are the following:
+- Processor 0: 3100 MHz
+- Processor 1: 800.044 MHz
+- Processor 2: 1323.415 MHz
+- Processor 3: 2142.117 MHz
+- Processor 4: 2160.990 MHz
+- Processor 5: 2099.624 MHz
+- Processor 6: 3100 MHz
+- Processor 7: 3100 MHz
+- Processor 8: 3100 MHz
+- Processor 9: 3100 MHz
+- Processor 10: 3100 MHz
+- Processor 11: 3100 MHz
+
+It is comprised of 12 CPUs: 6 cores per socket and 2 hardware threads per core.
+
+Exercise 2:
+
+The cache structure for each processor is the following:
+- L1d: 192 kiB (shared by hardware threads in each core)
+- L1i: 192 kiB (shared by hardware threads in each core)
+- L2: 1.5 MiB (shared by hardware threads in each core)
+- L3: MiB (shared between cores of the processor)
+
+This makes sense as the L3 is cheaper than the L2 and the latter is cheaper than the L1, and the cheaper it is the more data we can afford to store inside.
+
+Exercise 3:
+
+a. Command used: ./launch.sh 0 ./integers
+b. Elapsed time: 0:27.93s, 99%CPU
+c. Command used: ./launch.sh 0 ./floats
+d. Elapsed time: 0:27.51s, 99%CPU
+e. Command used: ./launch.sh 0 ./mems
+f. Elapsed time: 0:33.03s, 99%CPU
+
+Exercise 4:
+
+Integers:
+a. Command used: ./launch.sh 0 ./integers 0 ./integers
+b. Elapsed time: 0:54.76s, 49%CPU & 0:54.77s, 50%CPU
+
+Floats:
+a. Command used: ./launch.sh 0 ./floats 0 ./floats
+b. Elapsed time: 0:54.88s, 49%CPU & 0:55.50s, 50%CPU
+
+Mems:
+a. Command used: ./launch.sh 0 ./mems 0 ./mems
+b. Elapsed time: 1:05.51s, 49%CPU & 1:05:49s, 49%CPU
+
+This makes sense, as when we put two programs running in the same processing unit (CPU), the computing power is split between the two programs to run them simultaneously. This means that half of the thread works on each program, meaning that they will go twice as slow as if they were being ran by a thread individually. This matches the numbers obtained, as the times are double those that of running in one thread individually (27s->54s,27s->54s, 33s->65s)
+
+When running the programs in different threads, we go back to the time it takes when running in an individual hardware thread. They run in parallel but do not share the thread, so instead of one hardware thread doing work for both in a sequential manner, each thread works on a program and they are completed in the time that it would take one thread to run each.
+
+Exercise 5:
+
+a. Row wise:
+Average elapsed time for init(A): 0.1988s
+Average elapsed time for init(B): 0.1973s
+Average elapsed time for init(C): 0.1975s
+
+Column wise:
+Average elapsed time for init(A): 0.2023s
+Average elapsed time for init(B): 0.2009s
+Average elapsed time for init(C): 0.2036s
+
+Row wise is slightly faster than column wise, by an average of less than 5%.
+
+b. Row wise, we experience:
+- 6792689419 L1i refs, 1305 L1i misses, which accounts for 0.0% of instructions.
+- 3881502006 L1d refs, 303026656 L1d misses, which accounts for 0.8% of instructions.
+- 30327961 L2 refs, 30327497 L2 misses, which accounts for 0.3% of instructions.
+
+Column wise, we experience:
+- 6792689365 I refs, 1305 L1i misses, which accounts for 0.0% of instructions.
+- 3881501989 D refs, 242573812 L1d misses, which accounts for 6.2% of instructions.
+- 242575117 L2 refs, 30340982 L2 misses, which accounts for 0.3% of instructions.
+
+This seems to make sense, as for each case initially L2 is empty and each access to L2 is a miss, since we never get to capacity, and L1 gets to capacity many times, therefore only resulting in misses from its initial filling. Additionally, the amount of times we miss in L1 (misses in data+misses in instructions) complies with the amount of accesses (refs) to L2.
+
+Comparing the two cases, for L1 we can see that the number of instruction refs and misses does not change. This makes sense, because we are executing the same instructions. However, the number of data misses does change, which also makes sense as we are not storing the data in the same way, and the cache is not being filled in the same way. 
+
+For row, for L2 there are as almost as many misses as accesses to L2 (refs). This makes sense as every time we are accessing an element from L2 it is missing (L2 is never filled and we have never seen it before) and therefore we experience a miss every time. For column this is not the case, we see there are as many misses as for the row case, which makes sense as we need to fetch the same amount of elements from memory, however we have a lot more references. This is due to the fact that the data is brought by columns and initialised by rows, and therefore we might look for an element on the next row but from a column that was already brought to memory (L2), in which case we experience an L1 miss but an L2 hit.
+
+c. We believe that the majority of misses are conflict misses, due to the fact that the matrix does not fit in the cache in full and therefore sometimes the elements are being stored in cache where there was previously another element of the matrix. 
+
+Exercise 6:
+
+a. Row wise:
+Average elapsed time for init(A): 0.2507s
+Average elapsed time for init(B): 0.2495s
+Average elapsed time for init(C): 0.2495s
+
+Column wise:
+Average elapsed time for init(A): 0.2513s
+Average elapsed time for init(B): 0.2499s
+Average elapsed time for init(C): 0.2501s
+
+Row wise is just as fast as column wise on average.
+
+b. Row wise, we experience:
+- 7762962125 L1i refs, 1304 L1i misses, which accounts for 0.0% of instructions.
+- 3881501985 L1d refs, 15166180 L1d misses, which accounts for 0.4% of instructions.
+- 15167484 L2 refs, 15167021 L2 misses, which accounts for 0.1% of instructions.
+
+Column wise, we experience:
+- 7762162177 I refs, 1304 L1i misses, which accounts for 0.0% of instructions.
+- 3881501996 D refs, 242573848 L1d misses, which accounts for 6.2% of instructions.
+- 242575152 L2 refs, 15180506 L2 misses, which accounts for 0.1% of instructions.
+
+We see that for the difference in L2 misses and refs, as well as for the fact that the amount of L1 references is the same in both cases the explanation is analog to that of exercise 5. However, we see that in both cases there are less misses than in the version where we used doubles instead of float. This makes sense as double take up twice as much size as floats, and therefore the elements take less space and the possibility and frequency of conflict misses is significantly smaller.

@@ -1,0 +1,44 @@
+Exercise 1:
+
+a. We use the command ./writeint 10 > out.dat to redirect the output to the out.dat file, and we use cat out.dat to check that the file indeed contains a linebreak, which is encoded in ASCII as 10.
+b. By using the xxd out.dat command, we see the following output:
+00000000: 0a00 0000
+
+This corresponds to the hexadecimal representation of 10 in little endian, as our least significant bit is stored in the first memory position (smallest memory address).
+
+c. The command we use to write on the existing file is:
+./writeint 10 >> out.dat
+
+The file only contains an empty line.
+
+Exercise 3:
+We can get the command line arguments from a file with the following command:
+./readchar < out.dat
+We can also use the command:
+cat out.dat | xargs ./writebin 
+
+Exercise 5:
+When reading a value that is out of range, we experience overflow, and therefore we get values that do not match the expected. For example, we tried giving the output from writebin int 10 and it correctly gave 10, but when giving it the output from ./writebin int 3000000000, it gave -1294967296, which is clearly different and the product of an overflow (the range of an int goes from -2147483648 to 2147483647). When writing a value out of range, we also experience overflow: when we try to read the value again we find that the number stored does not correspond to what we expected at all.
+
+Exercise 6:
+When following the instructions with 100000, we obtain the ? emoji, which occupies 4 bytes, and when following the instructions with 127829, we obtain the pizza emoji, that also occupies 4 bytes, information that we obtained when including the -v flag. We understand that UTF-8 encoding is used here as the symbols that appeared do not have an ASCII representation.
+
+Exercise 9:
+When executing the command "./ages-struct Joan 21 Manel 41 Pep 23" we obtain the following output:
+Person 1: Joan 21
+Person 2: Manel 41
+Person 3: Pep 23
+
+On the other hand, when executing "./ages-union Joan 21 Manel 41 Pep 23" we obtain:
+Person 1:  21
+Person 2: ) 41
+Person 3:  23
+
+This makes sense, because the values of a union are stored in the same memory address, so values are overwritten. In our case, we first store the name of the person, but when we store the age the name gets overwritten. Therefore, when we try to read the name afterwards, we are actually reading the age, but as a character. In this case, 21 and 23 are non-printing characters, so nothing is printed for the name, and 41 corresponds to the character ")". On the other hand, the values of structs are stored in the same block of memory, but they are not overwritten, so the output is what we would expect.
+
+For the union case, if instead of storing first the name and then the age we do it the other way around, we get the opposite effect:
+Person 1: Joan 1851879242
+Person 2: Manel 1701732685
+Person 3: Pep 7365968
+
+The names are stored correctly, but when trying to print the age, the names are read as ints.
